@@ -1,0 +1,211 @@
+/* Triggers to insert values in view*/
+create table s(rollno number primary key,name varchar2(20));
+create table r(rollno number references s(rollno),grade char);
+					AND
+begin
+insert into s values(1,'ankit');
+insert into s values(2,'anu');
+end;
+					AND
+begin
+insert into r values(1,'a');
+insert into r values(2,'a');
+end;
+					AND
+create or replace view sr
+as
+select s.rollno,name,grade from s,r
+where s.rollno=r.rollno;
+					AND
+select * from sr;
+					AND
+insert into sr values(3,'rohan','b');
+					And
+create or replace trigger comp_vw
+instead of insert on sr
+for each row
+begin
+insert into s values(:new.rollno,:new.name);
+insert into r values(:new.rollno,:new.grade);
+dbms_output.put_line('Record inserted');
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*PLSQL collections */
+declare
+   type int_values is table of number
+   index by binary_integer;
+a int_values;
+begin
+a(3):=70;
+a(7):=45;
+a(9):=46;
+a(4):=12;
+dbms_output.put_line('The value at index 4 is:'||a(4));
+end;
+
+
+
+
+
+
+
+
+
+
+
+/* exists,count,delete,next,prior */
+declare
+   type int_values is table of number
+   index by binary_integer;
+a int_values;
+begin
+a(3):=70;
+a(7):=45;
+a(9):=46;
+a(4):=12;
+dbms_output.put_line(a.prior(9));
+dbms_output.put_line(a.next(4));
+if a.exists(2) then
+dbms_output.put_line('The value at index 2 is:'||a(2));
+else
+dbms_output.put_line('no value');
+end if;
+dbms_output.put_line(a.count);
+a.delete(3);
+a.delete(4,9);
+a.delete;
+dbms_output.put_line(a.count);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+/*Varchar plsql table*/
+declare
+ type name_managers is table of emp%rowtype
+   index by binary_integer;
+a name_managers;
+cursor cf is
+select * from emp where job='MANAGER';
+i number;
+begin
+open cf;
+i:=0;
+loop
+fetch cf into a(i);
+exit when cf%notfound;
+dbms_output.put_line(a(i).ename||' '||a(i).sal);
+i:=i+1;
+end loop;
+close cf;
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Varray*/
+declare
+  type weekday is varray(3) of varchar2(20);
+wkday weekday;
+begin
+wkday:=weekday('monday','tueday','wednesday');
+dbms_output.put_line(wkday(1)||' '||wkday(3));
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+/*explicit creation of varray for inserting 2 mob numbers in a same column*/
+create or replace type mobno is varray(2) of number;
+create table emp_details1(rn number,mob mobno);
+drop table emp_details1
+					AND
+insert into emp_details1
+values(1,mobno(7798876775,9763499809));
+					AND
+select e.rn,m.*
+from emp_details1 e,table(e.mob)m
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Varchar type varray using nested table*/
+create or replace type skillset
+is table of varchar2(10);
+					AND
+create table studentdetail
+(rollno number,
+skset skillset)
+nested table skset store as skill_set_tab
+					AND
+insert into studentdetail
+values(123,skillset('C','JAVA','.NET'));
+					AND
+select s.rollno,nt.* from studentdetail s,
+table(s.skset)nt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**/
+

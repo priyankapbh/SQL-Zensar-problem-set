@@ -1,0 +1,549 @@
+oracle technology network
+
+declare
+c number;
+a number;
+begin
+c:=21;
+a:=4;
+dbms_output.put_line('The value of addition is:'||(c+a));
+end;
+
+
+
+
+
+
+
+/*Getting user input in express edition*/
+declare
+c number:=:c;
+a number:=:a;
+begin
+--done /*Comment*/
+dbms_output.put_line('The value of addition is:'||(c+a));
+end;
+
+
+
+
+
+
+/*constants*/
+declare
+c constant number:=:c;
+a number:=:a;
+begin
+--comment
+dbms_output.put_line('The value of addition is:'||(c+a));
+end;
+
+
+
+
+
+
+
+/*inserting data*/
+declare
+usid varchar2(20):=:usid;
+pswd varchar2(20):=:pswd;
+begin
+--comment
+insert into alogin(userid,passwrd) values(usid,pswd);
+end;
+
+
+
+
+
+
+/*select*/
+declare 
+usid varchar2(20);
+begin
+select passwrd into usid
+from alogin
+where userid='piyu';
+dbms_output.put_line(usid);
+end;
+
+
+
+
+
+
+/*updating salary of specified employee in table 'emp'*/
+--accept employee number and raise salary by 10%
+declare
+vsal number;
+vempid number:=:vempid;
+begin
+
+select sal into vsalary
+from emp
+where empno=vempid;
+
+update emp set sal=(vsal+(vsal*0.1)) where empno=vempid;
+end;
+
+OR
+
+--accept employee number and raise salary by 10%
+declare
+vempid number:=:vempid;
+begin
+update emp set sal=(sal+(sal*0.1)) where empno=vempid;
+end;
+
+
+
+
+
+
+
+/*Anchor declarations (%rowtype)*/
+declare
+E emp%rowtype;
+begin
+select * into E
+from emp
+where empno=:empid;
+dbms_output.put_line(E.empno||' '||E.sal||' '||E.deptno);
+end;
+
+
+
+
+
+
+/*Anchor declarations (%type)*/
+declare
+vsal emp.sal%type;
+begin
+select sal into vsal
+from emp
+where empno=:empid;
+dbms_output.put_line('Salary is'||vsal);
+end;
+
+
+
+
+
+
+
+
+/*nesting of blocks*/
+declare
+a number:=8;
+begin
+	declare 
+	b number:=9;
+	begin
+	dbms_output.put_line(b);
+	end;
+dbms_output.put_line(a);
+end;
+
+
+
+
+
+
+
+
+/*nesting of blocks(labels)*/
+<<outer>>
+declare
+b number:=8;
+begin
+	<<inner>>
+	declare 
+	b number:=9;
+	begin
+	dbms_output.put_line(outer.b);
+	dbms_output.put_line(inner.b);
+	end;
+dbms_output.put_line(b);
+end;
+
+
+
+
+
+
+
+
+/*Constructs and loops[if......then....endif;][if....then....elsif.....else....end;]*/
+declare
+marks number:=:EnterMarks;
+begin
+if marks>=40 then
+dbms_output.put_line('passed');
+else
+dbms_output.put_line('Failed');
+end if;
+end;
+
+
+
+
+
+
+
+/*To check whether specified employee exixts or not*/
+--Accept empno and check exixtence of employee
+declare
+vempno number;
+begin
+select count(*) into vempno
+from emp
+where empno=:dempno;
+if vempno=0 then
+dbms_output.put_line('Sorry');
+else
+dbms_output.put_line('Exists');
+end if;
+end;
+
+
+
+
+
+
+
+
+/*Cases*/
+declare
+a number:=:a;
+begin
+case a 
+when 1 then
+dbms_output.put_line('1');
+when 1 then
+dbms_output.put_line('2');
+else
+dbms_output.put_line('No');
+end case;
+end;
+
+
+
+
+
+
+
+
+/*Cases to evaluate salaries*/
+--Accept salary of person &
+--if salary is more than 3000,raise sal by 10%
+--if salary more than 5000,raise sal then 20%
+--else no raise
+--Use Cases
+declare
+vsal number:=:salary;
+begin
+case 
+when vsal>=5000 then
+dbms_output.put_line(vsal+(vsal*0.2));
+when vsal>=300 and vsal<5000 then
+dbms_output.put_line(vsal+(vsal*0.1));
+else
+dbms_output.put_line('No');
+end case;
+end;
+
+
+
+
+
+
+
+
+/*Basic loop*/
+declare
+i number:=0;
+begin
+loop
+i:=i+1;
+dbms_output.put_line(i);
+exit when i>=10;
+end loop;
+end;
+
+
+
+
+
+
+/*while loop*/
+declare
+i number:=0;
+begin
+while(i<10)
+loop
+i:=i+1;
+dbms_output.put_line(i);
+end loop;
+end;
+
+
+
+
+
+
+
+/*For loop*/
+declare
+i number:=0;
+begin
+for i in 1..10
+loop
+dbms_output.put_line(i);
+end loop;
+end;
+
+
+
+
+
+
+
+
+/*Create a table inspection_details_employeeid with only one column.... Enter rows with values betn 0.1 to 6.8.... the diff should be 0.1*/
+create table inspection_details_employeeid (val number)
+declare
+i inspection_details_employeeid.val%type:=0.0;
+begin
+while(i<6.9)
+loop
+i:=i+0.1;
+dbms_output.put_line(i);
+insert into inspection_details_employeeid
+values(i);
+end loop;
+end;
+
+
+
+
+
+
+
+
+/*Check whether the string to be entered contains only alphabets... if yes, enter in database*/
+declare
+vuserid alogin.userid%type:=:userid;
+begin
+if regexp_like(vuserid,'^[A-Z]*[a-z]*$') then
+insert into alogin(userid,passwrd) values(vuserid,'hello');
+else
+dbms_output.put_line('Sorry');
+end if;
+end;
+
+
+
+
+
+
+
+/*ROWNUM*/
+select * from alogin
+where rownum<6
+
+
+
+
+
+
+
+
+
+/*delete*/
+begin
+delete from emp
+where empno=:empid;
+if sql%found then
+dbms_output.put_line('Record found and deleted');
+end if;
+if sql%notfound then
+dbms_output.put_line('Record not found');
+end if;
+end;
+
+
+
+
+
+
+
+
+
+
+/*Implicit cursor for DELETE statement*/
+begin
+delete from emp
+where empno=:empid;
+if sql%found then
+dbms_output.put_line('Record found and deleted');
+end if;
+if sql%notfound then
+dbms_output.put_line('Record not found');
+end if;
+if sql%isopen then
+dbms_output.put_line('Cursor is open');
+else
+dbms_output.put_line('Not open');
+end if;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*Explicit cursor for SELECT statement*/
+declare
+cursor cf is
+select * from emp
+where deptno=10;
+m cf%rowtype;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+dbms_output.put_line(m.empno||' '||m.ename||' '||m.deptno);
+end loop;
+close cf;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*Diplaying 3rd clerk using cursor(cf%rowcount) from emp*/
+--display 3rd clerk in table
+declare
+cursor cf is
+select * from emp
+where job='CLERK';
+m cf%rowtype;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+if cf%rowcount=3 then
+dbms_output.put_line(m.empno||' '||m.ename||' '||m.deptno);
+end if;
+end loop;
+close cf;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*Comparing data using cursors*/
+--Compare 2nd & 3rd clerk salary in emp and display who has higher salary
+declare
+cursor cf is
+select * from emp
+where job='CLERK';
+m cf%rowtype;
+vsaltwo emp.sal%type;
+vsalthree emp.sal%type;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+if cf%rowcount=2 then
+vsaltwo:=m.sal;
+end if;
+if cf%rowcount=3 then
+vsalthree:=m.sal;
+end if;
+if vsaltwo>vsalthree then
+dbms_output.put_line('2nd sal '||vsaltwo||' is greater than '||vsalthree);
+elsif vsaltwo<vsalthree then
+dbms_output.put_line('2nd sal '||vsaltwo||' is less than '||vsalthree);
+end if;
+end loop;
+close cf;
+end;
+
+
+
+
+
+
+
+
+/*Sum of salaries of first 5 employees*/
+declare
+cursor cf is
+select * from emp;
+m cf%rowtype;
+vtotalsal emp.sal%type:=0;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+if cf%rowcount<6 then
+vtotalsal:=vtotalsal+m.sal;
+end if;
+end loop;
+close cf;
+dbms_output.put_line('Sum of salary of first five employees is: '||vtotalsal);
+end;
+
+
+
+
+
+
+
+
+
+/*Display names of employees who are earning salary less than the avg salary of their own jobs*/
+declare
+cursor cf is
+select * from emp;
+m cf%rowtype;
+avgsal emp.sal%type:=0;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+select avg(sal) into avgsal
+from emp
+where job=m.job;
+if m.sal<avgsal then
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' less than avg salary i.e.'||avgsal);
+end if;
+end loop;
+close cf;
+end;

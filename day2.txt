@@ -1,0 +1,542 @@
+/*Declaring cursor*/
+declare
+cursor cf is
+select * from emp
+where job='MANAGER';
+begin
+for m in cf
+loop
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of job '||m.job);
+end loop;
+end;
+
+
+
+
+
+
+
+
+
+/*Parameterized cursor*/
+declare
+cursor cf(pjob emp.job%type) is
+select * from emp
+where job=pjob;
+m cf%rowtype;
+begin
+open cf('MANAGER');
+loop
+fetch cf into m;
+exit when cf%notfound;
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of job '||m.job);
+end loop;
+close cf;
+open cf('CLERK');
+loop
+fetch cf into m;
+exit when cf%notfound;
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of job '||m.job);
+end loop;
+close cf;
+end;
+
+                                      OR
+declare
+cursor cf(pjob emp.job%type) is
+select * from emp
+where job=pjob;
+m cf%rowtype;
+jobt varchar2(20):=:jobName;
+begin
+open cf(jobt);
+loop
+fetch cf into m;
+exit when cf%notfound;
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of job '||m.job);
+end loop;
+end;
+
+
+
+
+
+
+
+
+/*Parameterized cursor which will take deptno and will display highest two salaries of that deptno*/
+declare
+cursor cf(pdeptno emp.deptno%type) is
+select * from emp
+where deptno=pdeptno
+order by sal desc;
+a number:=:putdeptno;
+m cf%rowtype;
+begin
+open cf(a);
+loop
+fetch cf into m;
+exit when cf%notfound;
+if cf%rowcount<=2 then
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of deptno '||m.deptno);
+end if;
+end loop;
+close cf;
+end;
+                                 OR
+declare
+cursor cf(pdeptno emp.deptno%type) is
+select * from emp
+where deptno=pdeptno
+order by sal desc;
+m cf%rowtype;
+begin
+open cf(:putdeptno);
+loop
+fetch cf into m;
+exit when cf%notfound;
+if cf%rowcount<=2 then
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of deptno '||m.deptno);
+end if;
+end loop;
+close cf;
+end;
+                                  OR
+declare
+cursor cf(pdeptno emp.deptno%type) is
+select * from (select * from emp where deptno=pdeptno order by sal desc)
+where rownum<=2;
+m cf%rowtype;
+begin
+open cf(:putdeptno);
+loop
+fetch cf into m;
+exit when cf%notfound;
+--if cf%rowcount<=2 then
+dbms_output.put_line(m.ename||' of job '||m.job||' has sal '||m.sal||' of deptno '||m.deptno);
+--end if;
+end loop;
+close cf;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*SQL query for above requirement*/
+select * from (select * from emp order by sal desc)
+where rownum<=2
+
+
+
+
+
+
+
+
+
+
+
+/*Exception demo*/
+declare
+vsal number;
+begin
+select sal into vsal
+from emp
+where empno=:empno;
+exception
+when others then
+dbms_output.put_line('Please try again');
+end;
+                                OR
+declare
+vsal number;
+begin
+select sal into vsal
+from emp
+where empno=:empno;
+exception
+when no_data_found then
+dbms_output.put_line('Sorry');
+end;
+
+
+
+
+
+
+
+
+
+
+
+/**/
+create table dept_details
+(deptno number primary key,
+location varchar2(20)
+)
+                             AND
+create table emp_details
+(empno number primary key,
+ename varchar2(20),
+deptno number references dept_details(deptno))
+
+
+
+
+
+
+
+
+
+
+/*PRAGMA EXCEPTION_INIT() */
+declare
+ex exception;
+pragma exception_init(ex,-2292);
+begin
+delete from dept_details
+where deptno=:Enterdeptno;
+exception
+when ex then
+dbms_output.put_line('Sorry');
+end;
+
+
+
+
+
+
+
+
+
+
+/*Calculating Simple interest*/
+--to display simple interest
+--handle exception generated for type mismatch
+declare
+ex exception;
+pragma exception_init(ex,-6502);
+begin
+    declare
+amt number:=:amount;
+         rate number:=:rate;
+yrs number:=:years;
+begin
+     dbms_output.put_line('Simple interest is: '||(amt*(rate*0.01)*yrs));
+end;
+
+exception
+when ex then
+dbms_output.put_line('TYPE MISMATCH');
+
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+/*USER DEFINED EXCEPTION TO INSERT DATA WHICH ISN'T DUPLICATE*/
+
+create table mm1(empid number,ename varchar2(10),job varchar2(10));
+				AND
+begin
+insert into mm1 values(1,'John','Manager');
+insert into mm1 values(2,'Martin','Clerk');
+insert into mm1 values(3,'Smith','Clerk');
+end;
+				AND
+declare
+cursor cf is
+select * from mm1;
+vempid mm1.empid%type:=:id;
+vename mm1.ename%type:=:ename;
+vjob mm1.job%type:=:job;
+m cf%rowtype;
+FOUND_DUPLICATE_RECORD exception;
+begin
+open cf;
+loop
+fetch cf into m;
+exit when cf%notfound;
+if m.empid=vempid and m.ename=vename and m.job=vjob then
+raise FOUND_DUPLICATE_RECORD;
+end if;
+end loop;
+insert into mm1 values(vempid,vename,vjob);
+exception
+when FOUND_DUPLICATE_RECORD then
+dbms_output.put_line('Record already exists');
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* RAISE_APPLICATION_ERROR */
+declare
+mks number:=:marks;
+begin
+if mks>=40 then
+raise_application_error(-20001,'pass');
+else
+raise_application_error(-20002,'fail');
+end if;
+end;
+
+
+
+
+
+
+
+
+
+
+/*PROCEDURE DEMO*/
+create or replace procedure first_proc
+is
+vsal number;
+begin
+select sal into vsal
+from emp
+where empno=7369;
+dbms_output.put_line('Salary is:'||vsal);
+end first_proc;
+				AND
+begin
+first_proc;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*PARAMETERIZESD PROCEDURE*/
+create or replace procedure Sal_proc(vempno emp.empno%type)
+is
+vsal number;
+begin
+select sal into vsal
+from emp
+where empno=vempno;
+dbms_output.put_line('Salary is:'||vsal);
+end Sal_proc;
+				AND
+begin
+Sal_proc(7369);
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*IN and OUT parameters in procedures*/
+create or replace procedure Sal_proc(vempno in emp.empno%type,vsal out number)
+is
+begin
+select sal into vsal
+from emp
+where empno=vempno;
+dbms_output.put_line('Salary is:'||vsal);
+end Sal_proc;
+				AND
+declare
+salary number;
+begin
+Sal_proc(7369,salary);
+dbms_output.put_line(salary*100);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+/*Create procedure change_salary to accept salary and return salary which is raised by 40%*/
+create or replace procedure change_salary(sal in number,salout out number)
+is
+begin
+salout:=(sal+sal*0.4);
+end change_salary;
+				AND
+
+declare
+salinput number:=:salinput;
+salout number;
+begin
+change_salary(salinput,salout);
+dbms_output.put_line(salout);
+end;
+
+
+
+
+
+
+
+
+/*Pass a job name to procedure job_details and display total,max,min and avg sal of that job type*/
+create or replace procedure job_details(vjob emp.job%type)
+is
+a number;
+b number;
+c number;
+d number;
+begin
+select sum(sal),max(sal) ,min(sal) ,avg(sal) into a,b,c,d
+from emp
+where job=vjob;
+dbms_output.put_line('Total:'||a||'  Max:'||b||'  Min:'||c||'  Avg:'||d);
+end job_details;
+				AND
+begin
+job_details('CLERK');
+end;
+
+
+
+
+
+
+
+
+
+
+/*Insert values in dept table using procedures*/
+create or replace procedure insertval(vdno dept.deptno%type,vdname dept.dname%type default 'testing',vloct dept.loc%type)
+is
+begin
+insert into dept values(vdno,vdname,vloct);
+end;
+				AND
+declare
+vdeptno dept.deptno%type:=:deptno;
+vdname dept.dname%type:=:name;
+vloc dept.loc%type:=:location;
+begin
+insertval(vdno=>vdeptno,vloct=>vloc);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+/*IN and OUT for squaring a number*/
+create or replace procedure sq_no(x in out number)
+is
+begin
+x:=x*x;
+end sq_no;
+				AND
+declare
+a number:=:a;
+begin
+sq_no(a);
+dbms_output.put_line(a);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Procedure with name as parameter.Tell whether the employee is highest earner*/
+create or replace procedure IsHighest(vename emp.ename%type)
+is
+maxsal emp.sal%type;
+vsal emp.sal%type;
+begin
+select max(sal)into maxsal
+from emp;
+select sal into vsal
+from emp
+where ename=vename;
+if maxsal<=vsal then
+dbms_output.put_line('The employee is highest earner');
+else
+dbms_output.put_line('The employee is not a highest earner');
+end if;
+end;
+					AND
+declare
+vename emp.ename%type:=:Name;
+begin
+IsHighest(vename);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Create procedure NEW_EMP to insert new employee into emp table only if the specified deptno exists in dept table*/

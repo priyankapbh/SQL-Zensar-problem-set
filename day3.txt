@@ -1,0 +1,305 @@
+/* Even odd function demo*/
+create or replace function even_odd(x number)
+return varchar2
+is
+result varchar2(20);
+begin
+if mod(x,2)=0 then
+result :='No. is even';
+else
+result:='No. is odd';
+end if;
+return result;
+end even_odd;
+					AND
+select even_odd(4) from dual;           //for sql cmd
+					OR
+declare                                 //for calling through block
+res varchar2(20);
+begin
+res:=even_odd(4);
+dbms_output.put_line(res);
+end;
+
+
+
+
+
+
+
+
+
+
+/*Create a function Raise_Sal that will accept salary and returns 15% raised salary*/
+create or replace function raise_sal(vsal emp.sal%type)
+return emp.sal%type
+is
+begin
+return (vsal+(vsal*0.15));
+end raise_sal;
+					AND
+select raise_sal(sal),sal from emp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Function to find diff betn maxm sal n sal of emp*/
+create or replace function Sal_diff(vsal emp.sal%type)
+return emp.sal%type
+is
+salcmp emp.sal%type;
+begin
+select max(sal) into salcmp 
+from emp;
+return (salcmp-vsal);
+end Sal_diff;
+					AND
+select Sal_diff(sal),sal from emp;
+
+
+
+
+
+
+
+
+
+
+
+
+/*Insert data through functions in dept table*/
+create or replace function add_rec_dept(vdeptno dept.deptno%type,vdname dept.dname%type,vloc dept.loc%type)
+return number
+is
+begin
+insert into dept values(vdeptno,vdname,vloc);
+return 0;
+end add_rec_dept;
+					AND
+declare
+a number;
+begin
+a:=add_rec_dept(17,'Marketing','Pune');
+end;
+
+
+
+
+
+
+
+
+
+/*Package Demo*/
+create or replace package first_pack
+is
+procedure g;
+end first_pack;
+					AND
+create or replace package body first_pack
+is
+procedure g
+is begin
+dbms_output.put_line('in procedure g');
+end;
+end first_pack;
+					AND
+begin
+first_pack.g;
+end;
+
+
+
+
+
+
+
+
+
+
+
+/*Parameterized function in package */
+create or replace package first_pack
+is
+procedure p;
+function f1(x number) return number;
+g number;
+end;
+					AND
+create or replace package body first_pack
+is
+procedure p
+is
+begin
+if g>100 then
+dbms_output.put_line('discount is 20%');
+else
+dbms_output.put_line('discount is 10%');
+end if;
+end;
+
+function f1(x number) return number
+is
+begin
+g:=x;
+return g;
+end f1;
+end first_pack;
+					AND
+select first_pack.f1(120) from dual;
+
+
+
+
+
+
+
+
+
+
+
+
+/**/
+create or replace package clerk_salary
+is
+basic number:=10000;
+function get_HRA return number;
+function get_TA return number;
+function get_DA return number;
+function get_PF return number;
+end;
+					AND
+create or replace package body clerk_salary
+is
+ function get_HRA return number
+  is
+   begin
+   return basic*1.40;
+ end get_HRA;
+   
+
+ function get_DA return number
+  is
+   begin
+   return basic*1.35;
+ end get_DA;
+
+ function get_TA return number
+  is
+   begin
+   return (basic*0.10);
+ end get_TA;
+
+function get_pf return number
+is
+a number;
+begin
+a:=(basic+clerk_salary.get_HRA+clerk_salary.get_TA+clerk_salary.get_DA)*0.15;
+return (a);
+end get_pf;
+end clerk_salary;
+					AND
+declare
+vhra number;
+begin
+  
+ vhra:=clerk_salary.get_HRA();
+ dbms_output.put_line(vhra);
+
+ dbms_output.put_line(clerk_salary.get_pf);
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*Overload functions*/
+create or replace package overload_pack
+is
+procedure p;
+procedure p(x number);
+procedure p(x varchar2,y varchar2);
+end;
+					AND
+create or replace package body overload_pack
+is
+procedure p
+is
+begin
+dbms_output.put_line('in procedure p');
+end;
+
+procedure p(x number)
+is
+begin
+dbms_output.put_line(x);
+end;
+
+procedure p(x varchar2,y varchar2)
+is
+begin
+dbms_output.put_line(x||y);
+end;
+
+end overload_pack;
+					AND
+begin
+overload_pack.p;
+overload_pack.p(5);
+overload_pack.p('Nandini '||'Nikhil');
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*TRIGGERS*/
+create or replace trigger no_add_rec
+before insert on dept
+begin
+raise_application_error(-20001,'One does not simply make changes in my database');
+end;
+					AND
+insert into dept values(26,'Hey','Pune');
+
+
+
+
+
+/**/
+create or replace trigger nosaturday
+before insert on dept
+begin
+if to_char(sysdate,'fmday') like 'saturday' then
+raise_application_error(-20001,'Nope');
+end if;
+end;
+
